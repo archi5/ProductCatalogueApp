@@ -5,8 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,14 +20,13 @@ public class MysqlConnection {
 	private static String password = Constants.password;
 
 	private static Connection connection;
-	private static Statement state = null;
 	private static ResultSet result;
 	private static PreparedStatement pstate;
 
 	private MysqlConnection() throws SQLException {
 		try {
 			Class.forName(driver);
-			this.connection = DriverManager.getConnection(connectionUrl, user, password);
+			connection = DriverManager.getConnection(connectionUrl, user, password);
 		} catch (ClassNotFoundException ex) {
 			System.out.println("Database Connection Creation Failed : " + ex.getMessage());
 		}
@@ -107,7 +104,7 @@ public class MysqlConnection {
 
 		try {
 			connection = this.getConnection();
-			pstate = connection.prepareStatement(" select Category_L1, Category_L2, MRP_Price from products;");
+			pstate = connection.prepareStatement(Constants.avgQuery);
 			result = pstate.executeQuery();
 
 			Map<String, String> customMap = new HashMap<String, String>();
@@ -141,20 +138,19 @@ public class MysqlConnection {
 
 			}
 
-			Iterator itr = customMap.entrySet().iterator();
+			Iterator<Map.Entry<String, String>> itr = customMap.entrySet().iterator();
 			while (itr.hasNext()) {
-				Map.Entry pair = (Map.Entry) itr.next();
+				Map.Entry<String, String> pair = itr.next();
 				String pairValue[] = pair.getValue().toString().split("-");
 				int freq = Integer.parseInt(pairValue[0]);
 				int sum = Integer.parseInt(pairValue[1]);
-				float avg = sum/freq;
+				float avg = sum / freq;
 				System.out.println(pair.getKey() + ": " + avg);
-				
+
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			if (result != null) {
 				result.close();
 			}
